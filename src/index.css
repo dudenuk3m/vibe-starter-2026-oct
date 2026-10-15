@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-masthead: 'UnifrakturMaguntia', serif;
+    --font-nyt-serif: 'Source Serif 4', Georgia, serif;
+    --font-nyt-sans: 'Libre Franklin', system-ui, -apple-system, sans-serif;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-nyt-serif);
+    color: #1b1c1c;
+    background-color: #FFFFFF;
+  }
+}
+
+.font-masthead-gothic {
+  font-family: 'UnifrakturMaguntia', serif;
+}
+
+.font-serif-nyt {
+  font-family: 'Source Serif 4', Georgia, serif;
+}
+
+.font-sans-nyt {
+  font-family: 'Libre Franklin', system-ui, -apple-system, sans-serif;
+}
+
+/* Typography Utility Classes matching NYT broadsheet scale */
+.font-headline-lead {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 36px;
+  line-height: 40px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.font-headline-primary {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+.font-headline-secondary {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 19px;
+  line-height: 23px;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+
+.font-headline-tertiary {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.font-body-lead {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 17px;
+  line-height: 25px;
+  font-weight: 400;
+}
+
+.font-body-standard {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 400;
+}
+
+.font-body-summary {
+  font-family: 'Libre Franklin', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+
+.font-label-nav {
+  font-family: 'Libre Franklin', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+
+.font-label-badge {
+  font-family: 'Libre Franklin', system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  line-height: 12px;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.font-label-section-header {
+  font-family: 'Libre Franklin', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  font-weight: 800;
+}
+
+.font-label-metadata {
+  font-family: 'Libre Franklin', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+/* Color definitions */
+.bg-canvas-white { background-color: #FFFFFF; }
+.bg-opinion-cream { background-color: #F9F8F6; }
+.bg-surface-bright { background-color: #fbf9f9; }
+.bg-surface-container-low { background-color: #f5f3f3; }
+.bg-surface-container { background-color: #efeded; }
+.bg-surface-container-high { background-color: #e9e8e7; }
+.bg-surface-container-highest { background-color: #e3e2e2; }
+.bg-surface-container-lowest { background-color: #ffffff; }
+
+.bg-breaking-red { background-color: #b32400; }
+.text-breaking-red { color: #b32400; }
+
+.bg-action-blue { background-color: #567b95; }
+.text-action-blue { color: #567b95; }
+
+.text-on-surface { color: #1b1c1c; }
+.text-on-surface-variant { color: #444748; }
+.text-text-muted { color: #727272; }
+.text-on-primary { color: #ffffff; }
+
+.border-rule-hairline { border-color: #EBEBEB; }
+.border-rule-heavy { border-color: #121212; }
+
+/* Spacing and gutter shortcuts */
+.px-gutter-desktop { padding-left: 1.5rem; padding-right: 1.5rem; }
+.gap-gutter-desktop { gap: 1.5rem; }
+.gap-space-xs { gap: 0.25rem; }
+.gap-space-sm { gap: 0.5rem; }
+.gap-space-md { gap: 0.75rem; }
+.gap-space-lg { gap: 1.25rem; }
+.gap-space-xl { gap: 2rem; }
+
+.p-space-xs { padding: 0.25rem; }
+.p-space-sm { padding: 0.5rem; }
+.p-space-md { padding: 0.75rem; }
+.p-space-lg { padding: 1.25rem; }
+.p-space-xl { padding: 2rem; }
+
+.pt-space-xs { padding-top: 0.25rem; }
+.pt-space-sm { padding-top: 0.5rem; }
+.pt-space-md { padding-top: 0.75rem; }
+.pt-space-lg { padding-top: 1.25rem; }
+.pt-space-xl { padding-top: 2rem; }
+
+.pb-space-xs { padding-bottom: 0.25rem; }
+.pb-space-sm { padding-bottom: 0.5rem; }
+.pb-space-md { padding-bottom: 0.75rem; }
+.pb-space-lg { padding-bottom: 1.25rem; }
+.pb-space-xl { padding-bottom: 2rem; }
+
+.mt-space-xs { margin-top: 0.25rem; }
+.mt-space-sm { margin-top: 0.5rem; }
+.mt-space-md { margin-top: 0.75rem; }
+.mt-space-lg { margin-top: 1.25rem; }
+.mt-space-xl { margin-top: 2rem; }
+
+.mb-space-xs { margin-bottom: 0.25rem; }
+.mb-space-sm { margin-bottom: 0.5rem; }
+.mb-space-md { margin-bottom: 0.75rem; }
+
+/* First letter drop cap */
+.drop-cap-p::first-letter {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 3.4rem;
+  line-height: 0.85;
+  float: left;
+  margin-top: 4px;
+  margin-right: 8px;
+  font-weight: 700;
+  color: #121212;
+}

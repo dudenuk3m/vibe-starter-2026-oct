@@ -1,0 +1,6 @@
+{
+  "name": "The New York Times - Digital Edition",
+  "description": "An authentic New York Times digital newspaper reader featuring broadsheet layouts, breaking news, interactive games, recipes, Wirecutter reviews, and reader mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
