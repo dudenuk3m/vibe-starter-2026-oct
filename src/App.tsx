@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Header } from './components/Header';
 import { FrontPage } from './components/FrontPage';
 import { Footer } from './components/Footer';
@@ -16,6 +16,7 @@ import { TodaysPaperModal } from './components/TodaysPaperModal';
 import { MarketsModal } from './components/MarketsModal';
 import { ConfidentialTipModal } from './components/ConfidentialTipModal';
 import { PollsModal } from './components/PollsModal';
+import { FloatingAudioPlayer } from './components/FloatingAudioPlayer';
 
 import {
   ALL_ARTICLES,
@@ -29,6 +30,36 @@ import {
 
 export default function App() {
   const [currentSection, setCurrentSection] = useState('front-page');
+
+  // Theme support: Paper (default white), Sepia (warm broadsheet), Dark (night edition)
+  const [theme, setTheme] = useState<'paper' | 'sepia' | 'dark'>(() => {
+    try {
+      const saved = localStorage.getItem('nyt_theme');
+      return (saved as 'paper' | 'sepia' | 'dark') || 'paper';
+    } catch {
+      return 'paper';
+    }
+  });
+
+  useEffect(() => {
+    document.body.classList.remove('theme-sepia', 'theme-dark');
+    if (theme === 'sepia') {
+      document.body.classList.add('theme-sepia');
+    } else if (theme === 'dark') {
+      document.body.classList.add('theme-dark');
+    }
+    try {
+      localStorage.setItem('nyt_theme', theme);
+    } catch {
+      // ignore
+    }
+  }, [theme]);
+
+  // Audio Narration State
+  const [audioArticle, setAudioArticle] = useState<Article | null>(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [audioRate, setAudioRate] = useState(1);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Modals & Screens
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -73,11 +104,23 @@ export default function App() {
     }
   }, [bookmarkedArticles]);
 
+  // Keyboard shortcut listener (/ for search, Esc to close modals)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleToggleBookmark = (article: Article) => {
     const exists = bookmarkedArticles.some(a => a.id === article.id);
     if (exists) {
       setBookmarkedArticles(bookmarkedArticles.filter(a => a.id !== article.id));
-      showToast('Article removed from your reading list');
+      showToast('Article removed from reading list');
     } else {
       setBookmarkedArticles([article, ...bookmarkedArticles]);
       showToast('Article saved to your reading list');
@@ -102,6 +145,69 @@ export default function App() {
     }
   };
 
+  // Audio Speech Synthesis Engine
+  const startAudioNarration = (article: Article) => {
+    if (!('speechSynthesis' in window)) {
+      showToast('Speech narration is not supported in this browser.');
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setAudioArticle(article);
+
+    const fullSpeechText = `${article.title}. By ${article.author}. ${article.summary}. ${
+      article.fullContent?.join(' ') || ''
+    }`;
+
+    const utterance = new SpeechSynthesisUtterance(fullSpeechText);
+    utterance.rate = audioRate;
+    utterance.pitch = 1.0;
+    utterance.onend = () => {
+      setIsAudioPlaying(false);
+    };
+    utterance.onerror = () => {
+      setIsAudioPlaying(false);
+    };
+
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+    setIsAudioPlaying(true);
+    showToast(`Listening to: ${article.title}`);
+  };
+
+  const toggleAudioPlay = () => {
+    if (!('speechSynthesis' in window) || !audioArticle) return;
+
+    if (isAudioPlaying) {
+      window.speechSynthesis.pause();
+      setIsAudioPlaying(false);
+    } else {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      } else if (utteranceRef.current) {
+        window.speechSynthesis.speak(utteranceRef.current);
+      } else {
+        startAudioNarration(audioArticle);
+      }
+      setIsAudioPlaying(true);
+    }
+  };
+
+  const changeAudioRate = (newRate: number) => {
+    setAudioRate(newRate);
+    if (audioArticle && isAudioPlaying) {
+      startAudioNarration(audioArticle);
+    }
+  };
+
+  const closeAudioPlayer = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setAudioArticle(null);
+    setIsAudioPlaying(false);
+  };
+
   return (
     <div className="bg-canvas-white text-on-surface antialiased min-h-screen flex flex-col font-serif selection:bg-[#c8e6ff] selection:text-[#001e2e]">
       {/* Toast Notification */}
@@ -122,10 +228,12 @@ export default function App() {
         onOpenMarkets={() => setIsMarketsOpen(true)}
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
         savedCount={bookmarkedArticles.length}
+        theme={theme}
+        onChangeTheme={setTheme}
       />
 
-      {/* Main Body - pt-36 to clear fixed top nav */}
-      <main className="w-full pt-36 md:pt-40 bg-canvas-white flex-1">
+      {/* Main Body - pt-36/40 to clear fixed top nav */}
+      <main className="w-full pt-36 md:pt-40 bg-canvas-white flex-1 transition-colors">
         <FrontPage
           currentSection={currentSection}
           onSelectArticle={art => setSelectedArticle(art)}
@@ -139,6 +247,8 @@ export default function App() {
           onOpenPolls={() => setIsPollsOpen(true)}
           onOpenSubscribe={() => setIsSubscribeOpen(true)}
           onSelectSection={handleSelectSection}
+          onToggleBookmark={handleToggleBookmark}
+          bookmarkedIds={bookmarkedArticles.map(a => a.id)}
         />
       </main>
 
@@ -147,6 +257,18 @@ export default function App() {
         onSelectSection={handleSelectSection}
         onOpenSubscribe={() => setIsSubscribeOpen(true)}
       />
+
+      {/* Persistent Floating Audio Player when listening to any story */}
+      {audioArticle && (
+        <FloatingAudioPlayer
+          article={audioArticle}
+          isPlaying={isAudioPlaying}
+          rate={audioRate}
+          onTogglePlay={toggleAudioPlay}
+          onChangeRate={changeAudioRate}
+          onClose={closeAudioPlayer}
+        />
+      )}
 
       {/* ================= MODALS & ACTIVE SCREENS ================= */}
 
@@ -162,6 +284,7 @@ export default function App() {
             if (found) setSelectedArticle(found);
           }}
           allArticles={ALL_ARTICLES}
+          onStartAudioNarration={startAudioNarration}
         />
       )}
 

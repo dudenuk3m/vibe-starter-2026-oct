@@ -28,6 +28,8 @@ interface FrontPageProps {
   onOpenPolls: () => void;
   onOpenSubscribe: () => void;
   onSelectSection: (section: string) => void;
+  onToggleBookmark: (article: Article) => void;
+  bookmarkedIds: string[];
 }
 
 export const FrontPage: React.FC<FrontPageProps> = ({
@@ -43,6 +45,8 @@ export const FrontPage: React.FC<FrontPageProps> = ({
   onOpenPolls,
   onOpenSubscribe,
   onSelectSection,
+  onToggleBookmark,
+  bookmarkedIds,
 }) => {
   return (
     <div className="flex flex-col w-full">
@@ -109,29 +113,45 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
       {/* Broadsheet Main Container (1280px max) */}
       <div className="w-full max-w-[1280px] mx-auto px-gutter-desktop pb-space-xl">
-        {/* Primary Editorial Grid: 3-column architecture (Lead News, Developing Beat, Opinion/Culture) */}
+        {/* Primary Editorial Grid: 3-column broadsheet architecture with vertical hairline dividers */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop pt-space-md">
+          
           {/* ================= LEFT & CENTER LEAD PACKAGE (Columns 1 to 7) ================= */}
-          <section className="lg:col-span-7 flex flex-col gap-space-lg">
+          <section className="lg:col-span-7 flex flex-col gap-space-lg lg:border-r border-rule-hairline lg:pr-6">
+            
             {/* Main Breaking News Headline Package */}
-            <article className="flex flex-col gap-space-sm pb-space-md border-b border-rule-hairline">
-              <div className="flex items-center gap-space-xs">
-                <span className="bg-breaking-red text-on-primary font-label-badge text-label-badge uppercase px-space-xs py-[2px] tracking-wider">
-                  {LEAD_ARTICLE.kicker}
-                </span>
-                <span className="text-text-muted font-label-metadata text-label-metadata">
-                  Washington Bureau
-                </span>
+            <article className="flex flex-col gap-space-sm pb-space-md border-b border-rule-hairline group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-space-xs">
+                  <span className="bg-breaking-red text-on-primary font-label-badge text-label-badge uppercase px-space-xs py-[2px] tracking-wider">
+                    {LEAD_ARTICLE.kicker}
+                  </span>
+                  <span className="text-text-muted font-label-metadata text-label-metadata">
+                    Washington Bureau
+                  </span>
+                </div>
+                <button
+                  onClick={() => onToggleBookmark(LEAD_ARTICLE)}
+                  title={bookmarkedIds.includes(LEAD_ARTICLE.id) ? 'Saved' : 'Save article'}
+                  className="text-text-muted hover:text-primary transition-colors cursor-pointer p-0.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    {bookmarkedIds.includes(LEAD_ARTICLE.id) ? 'bookmark' : 'bookmark_border'}
+                  </span>
+                </button>
               </div>
+
               <h1
                 onClick={() => onSelectArticle(LEAD_ARTICLE)}
-                className="font-headline-lead text-headline-lead text-primary hover:text-action-blue cursor-pointer transition-colors"
+                className="font-headline-lead text-headline-lead text-primary group-hover:text-action-blue cursor-pointer transition-colors"
               >
                 {LEAD_ARTICLE.title}
               </h1>
+
               <p className="font-body-lead text-body-lead text-on-surface leading-snug">
                 {LEAD_ARTICLE.summary}
               </p>
+
               <div className="flex items-center gap-space-sm text-text-muted font-label-metadata text-label-metadata pt-space-xs">
                 <span className="text-on-surface font-semibold">{LEAD_ARTICLE.author}</span>
                 <span>•</span>
@@ -149,52 +169,64 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
             {/* Two Column Sub-Package Under Lead: Main Photo + Companion Sidebar */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter-desktop">
+              
               {/* Editorial Photo & Kimberly Guilfoyle teaser (MD col 7) */}
-              <div className="md:col-span-7 flex flex-col gap-space-xs">
+              <div className="md:col-span-7 flex flex-col gap-space-xs md:border-r border-rule-hairline md:pr-4">
                 <div
                   onClick={() => onSelectArticle(GUILFOYLE_ARTICLE)}
                   className="relative overflow-hidden bg-surface-container cursor-pointer group"
                 >
                   <img
-                    className="w-full h-72 object-cover object-top group-hover:scale-[1.01] transition-transform duration-300"
+                    className="w-full h-72 object-cover object-top group-hover:scale-[1.015] transition-transform duration-300"
                     src={GUILFOYLE_ARTICLE.imageUrl}
                     alt={GUILFOYLE_ARTICLE.imageCaption}
                   />
-                  <span className="absolute bottom-1 right-1 bg-primary/70 text-on-primary text-[9px] font-label-metadata px-1 uppercase">
+                  <span className="absolute bottom-1 right-1 bg-primary/80 text-on-primary text-[9px] font-label-metadata px-1.5 py-0.5 uppercase tracking-wide">
                     {GUILFOYLE_ARTICLE.imageCredit}
                   </span>
                 </div>
-                <article className="pt-space-xs">
+
+                <article className="pt-space-xs group">
                   <h2
                     onClick={() => onSelectArticle(GUILFOYLE_ARTICLE)}
-                    className="font-headline-secondary text-headline-secondary text-primary hover:text-action-blue cursor-pointer"
+                    className="font-headline-secondary text-headline-secondary text-primary group-hover:text-action-blue cursor-pointer transition-colors"
                   >
                     {GUILFOYLE_ARTICLE.title}
                   </h2>
-                  <p className="font-body-summary text-body-summary text-on-surface-variant mt-space-xs">
+                  <p className="font-body-summary text-body-summary text-on-surface-variant mt-space-xs leading-relaxed">
                     {GUILFOYLE_ARTICLE.summary}
                   </p>
-                  <div className="flex items-center gap-space-sm text-text-muted font-label-metadata text-label-metadata mt-space-xs">
-                    <span>{GUILFOYLE_ARTICLE.author}</span>
-                    <span>•</span>
-                    <span>{GUILFOYLE_ARTICLE.readTime}</span>
+                  <div className="flex items-center justify-between mt-space-xs pt-1 border-t border-rule-hairline text-text-muted font-label-metadata text-label-metadata">
+                    <div>
+                      <span>{GUILFOYLE_ARTICLE.author}</span>
+                      <span> • </span>
+                      <span>{GUILFOYLE_ARTICLE.readTime}</span>
+                    </div>
+                    <button
+                      onClick={() => onToggleBookmark(GUILFOYLE_ARTICLE)}
+                      className="hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">
+                        {bookmarkedIds.includes(GUILFOYLE_ARTICLE.id) ? 'bookmark' : 'bookmark_border'}
+                      </span>
+                    </button>
                   </div>
                 </article>
               </div>
 
               {/* Secondary Companion Wire (MD col 5) */}
-              <div className="md:col-span-5 flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-xs">
-                <article className="flex flex-col gap-space-xs">
-                  <span className="font-label-badge text-label-badge text-action-blue uppercase tracking-widest">
+              <div className="md:col-span-5 flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-xs border border-rule-hairline">
+                <article className="flex flex-col gap-space-xs group">
+                  <span className="font-label-badge text-label-badge text-action-blue uppercase tracking-widest font-bold">
                     {SIDEBAR_ARTICLES[0].kicker}
                   </span>
                   <h3
                     onClick={() => onSelectArticle(SIDEBAR_ARTICLES[0])}
-                    className="font-headline-secondary text-headline-secondary text-primary hover:text-action-blue cursor-pointer"
+                    className="font-headline-secondary text-headline-secondary text-primary group-hover:text-action-blue cursor-pointer transition-colors"
                   >
                     {SIDEBAR_ARTICLES[0].title}
                   </h3>
-                  <p className="font-body-summary text-body-summary text-on-surface-variant">
+                  <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                     {SIDEBAR_ARTICLES[0].summary}
                   </p>
                   <div className="flex items-center gap-space-sm text-text-muted font-label-metadata text-label-metadata mt-space-xs">
@@ -207,8 +239,9 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   </div>
                 </article>
 
-                <div className="w-full h-8 bg-surface-container flex items-center justify-between px-space-sm rounded-xs">
-                  <span className="font-label-metadata text-label-metadata text-text-muted uppercase tracking-wider">
+                {/* Confidential Tip Link */}
+                <div className="w-full h-8 bg-surface-container flex items-center justify-between px-space-sm rounded-xs border border-rule-hairline">
+                  <span className="font-label-metadata text-label-metadata text-text-muted uppercase tracking-wider font-semibold">
                     Confidential Tip
                   </span>
                   <button
@@ -219,18 +252,18 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   </button>
                 </div>
 
-                <article className="flex flex-col gap-space-xs pt-space-xs">
-                  <span className="font-label-badge text-label-badge text-breaking-red uppercase tracking-wider flex items-center gap-1">
+                <article className="flex flex-col gap-space-xs pt-space-xs border-t border-rule-hairline group">
+                  <span className="font-label-badge text-label-badge text-breaking-red uppercase tracking-wider flex items-center gap-1 font-bold">
                     <span className="w-1.5 h-1.5 rounded-full bg-breaking-red"></span>{' '}
                     {SIDEBAR_ARTICLES[1].kicker}
                   </span>
                   <h4
                     onClick={() => onSelectArticle(SIDEBAR_ARTICLES[1])}
-                    className="font-headline-tertiary text-headline-tertiary text-primary hover:text-action-blue cursor-pointer"
+                    className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue cursor-pointer transition-colors"
                   >
                     {SIDEBAR_ARTICLES[1].title}
                   </h4>
-                  <p className="font-body-summary text-body-summary text-on-surface-variant">
+                  <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                     {SIDEBAR_ARTICLES[1].summary}
                   </p>
                 </article>
@@ -251,14 +284,14 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
-                <article className="flex flex-col gap-space-xs">
+                <article className="flex flex-col gap-space-xs group">
                   <h4
                     onClick={() => onSelectArticle(TECH_ARTICLES[0])}
-                    className="font-headline-primary text-headline-primary text-primary hover:text-action-blue cursor-pointer"
+                    className="font-headline-primary text-headline-primary text-primary group-hover:text-action-blue cursor-pointer transition-colors"
                   >
                     {TECH_ARTICLES[0].title}
                   </h4>
-                  <p className="font-body-summary text-body-summary text-on-surface-variant">
+                  <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                     {TECH_ARTICLES[0].summary}
                   </p>
                   <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -266,15 +299,15 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   </span>
                 </article>
 
-                <div className="flex flex-col gap-space-sm">
+                <div className="flex flex-col gap-space-sm divide-y divide-rule-hairline">
                   <article
                     onClick={() => onSelectArticle(TECH_ARTICLES[1])}
-                    className="flex flex-col gap-1 p-space-xs hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex flex-col gap-1 p-space-xs hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs group"
                   >
-                    <span className="font-label-badge text-label-badge text-text-muted uppercase">
+                    <span className="font-label-badge text-label-badge text-text-muted uppercase font-bold">
                       {TECH_ARTICLES[1].kicker}
                     </span>
-                    <h5 className="font-headline-tertiary text-headline-tertiary text-primary hover:text-action-blue">
+                    <h5 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue">
                       {TECH_ARTICLES[1].title}
                     </h5>
                     <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -284,12 +317,12 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
                   <article
                     onClick={() => onSelectArticle(TECH_ARTICLES[2])}
-                    className="flex flex-col gap-1 p-space-xs hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex flex-col gap-1 p-space-xs pt-2 hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs group"
                   >
-                    <span className="font-label-badge text-label-badge text-text-muted uppercase">
+                    <span className="font-label-badge text-label-badge text-text-muted uppercase font-bold">
                       {TECH_ARTICLES[2].kicker}
                     </span>
-                    <h5 className="font-headline-tertiary text-headline-tertiary text-primary hover:text-action-blue">
+                    <h5 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue">
                       {TECH_ARTICLES[2].title}
                     </h5>
                     <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -302,7 +335,8 @@ export const FrontPage: React.FC<FrontPageProps> = ({
           </section>
 
           {/* ================= MID COLUMN: RUSSIA-UKRAINE & MIDTERMS (Columns 8 to 9) ================= */}
-          <section className="lg:col-span-2 flex flex-col gap-space-md bg-surface-container-low p-space-sm rounded-xs">
+          <section className="lg:col-span-2 flex flex-col gap-space-md bg-surface-container-low p-space-sm rounded-xs lg:border-r border-rule-hairline lg:pr-4">
+            
             {/* Russia-Ukraine War Package */}
             <div className="flex flex-col gap-space-xs">
               <div className="flex items-center justify-between pb-space-xs">
@@ -311,14 +345,14 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 </span>
                 <span className="w-2 h-2 rounded-full bg-breaking-red"></span>
               </div>
-              <article className="flex flex-col gap-space-xs">
+              <article className="flex flex-col gap-space-xs group">
                 <h3
                   onClick={() => onSelectArticle(MID_COLUMN_ARTICLES[0])}
-                  className="font-headline-secondary text-headline-secondary text-primary hover:text-action-blue cursor-pointer"
+                  className="font-headline-secondary text-headline-secondary text-primary group-hover:text-action-blue cursor-pointer transition-colors"
                 >
                   {MID_COLUMN_ARTICLES[0].title}
                 </h3>
-                <p className="font-body-summary text-body-summary text-on-surface-variant">
+                <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                   {MID_COLUMN_ARTICLES[0].summary}
                 </p>
                 <div className="flex items-center gap-space-sm text-text-muted font-label-metadata text-label-metadata">
@@ -332,9 +366,9 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
               <article
                 onClick={() => onSelectArticle(MID_COLUMN_ARTICLES[1])}
-                className="flex flex-col gap-space-xs pt-space-xs cursor-pointer group"
+                className="flex flex-col gap-space-xs pt-space-xs border-t border-rule-hairline cursor-pointer group"
               >
-                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue">
+                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                   {MID_COLUMN_ARTICLES[1].title}
                 </h4>
                 <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -344,9 +378,9 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
               <article
                 onClick={() => onSelectArticle(MID_COLUMN_ARTICLES[2])}
-                className="flex flex-col gap-space-xs pt-space-xs cursor-pointer group"
+                className="flex flex-col gap-space-xs pt-space-xs border-t border-rule-hairline cursor-pointer group"
               >
-                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue">
+                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                   {MID_COLUMN_ARTICLES[2].title}
                 </h4>
                 <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -358,7 +392,7 @@ export const FrontPage: React.FC<FrontPageProps> = ({
             {/* The Evening Briefing Box */}
             <div
               onClick={() => onSelectArticle(LEAD_ARTICLE)}
-              className="p-space-sm bg-surface-container flex flex-col gap-space-xs cursor-pointer hover:bg-surface-container-high transition-colors rounded-xs"
+              className="p-space-sm bg-surface-container flex flex-col gap-space-xs cursor-pointer hover:bg-surface-container-high transition-colors rounded-xs border border-rule-hairline"
             >
               <span className="font-label-badge text-label-badge uppercase text-primary font-bold">
                 The Evening Briefing
@@ -366,7 +400,7 @@ export const FrontPage: React.FC<FrontPageProps> = ({
               <h4 className="font-headline-tertiary text-headline-tertiary text-primary hover:underline">
                 Catch Up on Today’s Biggest Stories
               </h4>
-              <p className="font-body-summary text-body-summary text-on-surface-variant">
+              <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                 Energy prices lift inflation, Ukraine grows vulnerable and the Texas Senate race tightens.
               </p>
               <span className="font-label-metadata text-label-metadata text-text-muted">
@@ -382,14 +416,14 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 </span>
                 <span className="text-[10px] font-label-metadata text-text-muted">Midterms</span>
               </div>
-              <article className="flex flex-col gap-space-xs">
+              <article className="flex flex-col gap-space-xs group">
                 <h3
                   onClick={onOpenPolls}
-                  className="font-headline-secondary text-headline-secondary text-primary hover:text-action-blue cursor-pointer"
+                  className="font-headline-secondary text-headline-secondary text-primary group-hover:text-action-blue cursor-pointer transition-colors"
                 >
                   {ELECTION_DISPATCHES.title}
                 </h3>
-                <ul className="flex flex-col gap-space-xs font-body-summary text-body-summary text-on-surface-variant list-disc pl-4 mt-space-xs">
+                <ul className="flex flex-col gap-space-xs font-body-summary text-body-summary text-on-surface-variant list-disc pl-4 mt-space-xs leading-relaxed">
                   {ELECTION_DISPATCHES.bullets.map((bullet, bIdx) => (
                     <li key={bIdx}>{bullet}</li>
                   ))}
@@ -414,10 +448,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                     <div
                       key={p.race}
                       onClick={onOpenPolls}
-                      className="p-space-xs bg-surface-container hover:bg-surface-container-high cursor-pointer transition-colors rounded-xs"
+                      className="p-space-xs bg-surface-container hover:bg-surface-container-high cursor-pointer transition-colors rounded-xs border border-rule-hairline"
                     >
                       <span className="block text-primary font-bold">{p.race}</span>
-                      <span className={`block text-[10px] ${p.race === 'Pres. Approval' ? 'text-breaking-red' : 'text-text-muted'}`}>
+                      <span className={`block text-[10px] font-mono ${p.race === 'Pres. Approval' ? 'text-breaking-red font-bold' : 'text-text-muted'}`}>
                         {p.value}
                       </span>
                     </div>
@@ -429,9 +463,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
           {/* ================= RIGHT COLUMN: OPINION & CULTURE (Columns 10 to 12) ================= */}
           <section className="lg:col-span-3 flex flex-col gap-space-lg">
+            
             {/* Opinion Header & Columnists (Classic NYT Opinion Styling with subtle cream background) */}
             <div className="bg-opinion-cream p-space-md flex flex-col gap-space-md rounded-xs border border-rule-hairline">
-              <div className="flex items-center justify-between pb-space-xs">
+              <div className="flex items-center justify-between pb-space-xs border-b border-rule-hairline">
                 <span className="font-headline-primary text-headline-primary font-serif italic text-primary">
                   Opinion
                 </span>
@@ -455,9 +490,7 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   <div className="flex items-center gap-space-xs">
                     <span
                       className={`w-6 h-6 rounded-full font-label-badge text-[10px] flex items-center justify-center font-bold ${
-                        idx === 0
-                          ? 'bg-primary text-on-primary'
-                          : idx === 2
+                        idx === 0 || idx === 2
                           ? 'bg-primary text-on-primary'
                           : 'bg-surface-container-highest text-primary'
                       }`}
@@ -468,7 +501,7 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                       {essay.author}
                     </span>
                   </div>
-                  <h4 className="font-headline-tertiary text-headline-tertiary font-serif text-primary group-hover:text-action-blue">
+                  <h4 className="font-headline-tertiary text-headline-tertiary font-serif text-primary group-hover:text-action-blue transition-colors">
                     {essay.title}
                   </h4>
                   <div className="flex items-center gap-space-sm text-text-muted font-label-metadata text-label-metadata">
@@ -505,10 +538,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 onClick={() => onSelectArticle(CULTURE_ARTICLES[0])}
                 className="flex flex-col gap-space-xs cursor-pointer group"
               >
-                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue">
+                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                   {CULTURE_ARTICLES[0].title}
                 </h4>
-                <p className="font-body-summary text-body-summary text-on-surface-variant">
+                <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                   {CULTURE_ARTICLES[0].summary}
                 </p>
                 <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -520,10 +553,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 onClick={() => onSelectArticle(CULTURE_ARTICLES[1])}
                 className="flex flex-col gap-space-xs pt-space-xs border-t border-rule-hairline cursor-pointer group"
               >
-                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue">
+                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                   {CULTURE_ARTICLES[1].title}
                 </h4>
-                <p className="font-body-summary text-body-summary text-on-surface-variant">
+                <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                   {CULTURE_ARTICLES[1].summary}
                 </p>
                 <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -535,10 +568,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 onClick={() => onSelectArticle(CULTURE_ARTICLES[2])}
                 className="flex flex-col gap-space-xs pt-space-xs border-t border-rule-hairline cursor-pointer group"
               >
-                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue">
+                <h4 className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                   {CULTURE_ARTICLES[2].title}
                 </h4>
-                <p className="font-body-summary text-body-summary text-on-surface-variant">
+                <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                   {CULTURE_ARTICLES[2].summary}
                 </p>
                 <span className="text-text-muted font-label-metadata text-label-metadata">
@@ -549,7 +582,7 @@ export const FrontPage: React.FC<FrontPageProps> = ({
               {/* Sports Live Package: M.L.B. Postseason */}
               <div
                 onClick={() => onSelectArticle(CULTURE_ARTICLES[3])}
-                className="bg-surface-container-high p-space-sm flex flex-col gap-space-xs rounded-xs cursor-pointer hover:bg-surface-container-highest transition-colors"
+                className="bg-surface-container-high p-space-sm flex flex-col gap-space-xs rounded-xs cursor-pointer hover:bg-surface-container-highest transition-colors border border-rule-hairline"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-label-badge text-label-badge uppercase text-breaking-red font-bold flex items-center gap-1">
@@ -562,7 +595,7 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 <h5 className="font-headline-tertiary text-headline-tertiary text-primary hover:underline">
                   {CULTURE_ARTICLES[3].title}
                 </h5>
-                <p className="font-body-summary text-body-summary text-on-surface-variant">
+                <p className="font-body-summary text-body-summary text-on-surface-variant leading-relaxed">
                   {CULTURE_ARTICLES[3].summary}
                 </p>
               </div>
@@ -579,14 +612,15 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                 | Cross-Product Suite
               </span>
             </div>
-            <span className="font-label-metadata text-label-metadata text-text-muted">
+            <span className="font-label-metadata text-label-metadata text-text-muted font-medium">
               All Access Features
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter-desktop">
+            
             {/* NYT Games Card */}
-            <div className="bg-surface-bright p-space-md flex flex-col justify-between border border-rule-hairline rounded-xs">
+            <div className="bg-surface-bright p-space-md flex flex-col justify-between border border-rule-hairline rounded-xs shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-space-xs">
                   <span className="font-label-section-header text-label-section-header uppercase tracking-wider text-primary">
@@ -604,10 +638,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   {/* Wordle */}
                   <div
                     onClick={onOpenWordle}
-                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer rounded-xs border border-transparent hover:border-rule-hairline"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-[#6aaa64] text-white flex items-center justify-center font-bold text-[10px] rounded-xs">
+                      <span className="w-5 h-5 bg-[#6aaa64] text-white flex items-center justify-center font-bold text-[10px] rounded-xs shadow-xs">
                         W
                       </span>
                       <span className="font-label-metadata text-label-metadata font-bold text-on-surface">
@@ -622,10 +656,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   {/* Connections */}
                   <div
                     onClick={onOpenConnections}
-                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer rounded-xs border border-transparent hover:border-rule-hairline"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-[#b4a8ff] text-white flex items-center justify-center font-bold text-[10px] rounded-xs">
+                      <span className="w-5 h-5 bg-[#b4a8ff] text-white flex items-center justify-center font-bold text-[10px] rounded-xs shadow-xs">
                         C
                       </span>
                       <span className="font-label-metadata text-label-metadata font-bold text-on-surface">
@@ -640,10 +674,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   {/* Spelling Bee */}
                   <div
                     onClick={onOpenSpellingBee}
-                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer rounded-xs border border-transparent hover:border-rule-hairline"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-[#f7da21] text-primary flex items-center justify-center font-bold text-[10px] rounded-xs">
+                      <span className="w-5 h-5 bg-[#f7da21] text-primary flex items-center justify-center font-bold text-[10px] rounded-xs shadow-xs">
                         B
                       </span>
                       <span className="font-label-metadata text-label-metadata font-bold text-on-surface">
@@ -658,10 +692,10 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   {/* The Mini Crossword */}
                   <div
                     onClick={onOpenMiniCrossword}
-                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex items-center justify-between p-space-xs bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer rounded-xs border border-transparent hover:border-rule-hairline"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 bg-action-blue text-white flex items-center justify-center font-bold text-[10px] rounded-xs">
+                      <span className="w-5 h-5 bg-action-blue text-white flex items-center justify-center font-bold text-[10px] rounded-xs shadow-xs">
                         M
                       </span>
                       <span className="font-label-metadata text-label-metadata font-bold text-on-surface">
@@ -677,20 +711,20 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
               <button
                 onClick={onOpenWordle}
-                className="w-full mt-space-md py-space-xs bg-transparent text-primary hover:bg-surface-container font-label-badge text-label-badge uppercase tracking-wider transition-colors cursor-pointer border border-rule-hairline"
+                className="w-full mt-space-md py-space-xs bg-transparent text-primary hover:bg-surface-container font-label-badge text-label-badge uppercase tracking-wider transition-colors cursor-pointer border border-rule-hairline font-semibold"
               >
                 Solve Crosswords Archive
               </button>
             </div>
 
             {/* NYT Cooking Card */}
-            <div className="bg-surface-bright p-space-md flex flex-col justify-between border border-rule-hairline rounded-xs">
+            <div className="bg-surface-bright p-space-md flex flex-col justify-between border border-rule-hairline rounded-xs shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-space-xs">
                   <span className="font-label-section-header text-label-section-header uppercase tracking-wider text-primary">
                     NYT Cooking
                   </span>
-                  <span className="font-label-badge text-label-badge text-breaking-red uppercase">
+                  <span className="font-label-badge text-label-badge text-breaking-red uppercase font-bold">
                     Popular
                   </span>
                 </div>
@@ -702,15 +736,15 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   {/* Dish 1 */}
                   <div
                     onClick={() => onSelectRecipe(RECIPES[0])}
-                    className="flex gap-space-sm items-center p-space-xs bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex gap-space-sm items-center p-space-xs bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer rounded-xs border border-transparent hover:border-rule-hairline group"
                   >
                     <img
-                      className="w-16 h-16 object-cover flex-shrink-0 rounded-xs"
+                      className="w-16 h-16 object-cover flex-shrink-0 rounded-xs group-hover:scale-105 transition-transform"
                       src={RECIPES[0].imageUrl}
                       alt={RECIPES[0].title}
                     />
                     <div className="flex flex-col">
-                      <span className="font-headline-tertiary text-headline-tertiary text-primary hover:text-action-blue">
+                      <span className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                         {RECIPES[0].title}
                       </span>
                       <span className="font-label-metadata text-[11px] text-text-muted">
@@ -722,15 +756,15 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                   {/* Dish 2 */}
                   <div
                     onClick={() => onSelectRecipe(RECIPES[1])}
-                    className="flex gap-space-sm items-center p-space-xs bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                    className="flex gap-space-sm items-center p-space-xs bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer rounded-xs border border-transparent hover:border-rule-hairline group"
                   >
                     <img
-                      className="w-16 h-16 object-cover flex-shrink-0 rounded-xs"
+                      className="w-16 h-16 object-cover flex-shrink-0 rounded-xs group-hover:scale-105 transition-transform"
                       src={RECIPES[1].imageUrl}
                       alt={RECIPES[1].title}
                     />
                     <div className="flex flex-col">
-                      <span className="font-headline-tertiary text-headline-tertiary text-primary hover:text-action-blue">
+                      <span className="font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                         {RECIPES[1].title}
                       </span>
                       <span className="font-label-metadata text-[11px] text-text-muted">
@@ -743,14 +777,14 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
               <button
                 onClick={() => onSelectRecipe(RECIPES[0])}
-                className="block text-center w-full mt-space-md py-space-xs bg-transparent text-primary hover:bg-surface-container font-label-badge text-label-badge uppercase tracking-wider transition-colors cursor-pointer border border-rule-hairline"
+                className="block text-center w-full mt-space-md py-space-xs bg-transparent text-primary hover:bg-surface-container font-label-badge text-label-badge uppercase tracking-wider transition-colors cursor-pointer border border-rule-hairline font-semibold"
               >
                 See Five Weeknight Dishes ›
               </button>
             </div>
 
             {/* Wirecutter Card */}
-            <div className="bg-surface-bright p-space-md flex flex-col justify-between border border-rule-hairline rounded-xs">
+            <div className="bg-surface-bright p-space-md flex flex-col justify-between border border-rule-hairline rounded-xs shadow-xs">
               <div>
                 <div className="flex items-center justify-between mb-space-xs">
                   <span className="font-label-section-header text-label-section-header uppercase tracking-wider text-primary">
@@ -769,12 +803,12 @@ export const FrontPage: React.FC<FrontPageProps> = ({
                     <div
                       key={rev.id}
                       onClick={() => onSelectReview(rev)}
-                      className="p-space-xs bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xs"
+                      className="p-space-xs bg-surface-container hover:bg-surface-container-high transition-all cursor-pointer rounded-xs border border-transparent hover:border-rule-hairline group"
                     >
-                      <span className="font-label-badge text-[9px] uppercase text-action-blue">
+                      <span className="font-label-badge text-[9px] uppercase text-action-blue font-bold">
                         {rev.badge}
                       </span>
-                      <span className="block font-headline-tertiary text-headline-tertiary text-primary">
+                      <span className="block font-headline-tertiary text-headline-tertiary text-primary group-hover:text-action-blue transition-colors">
                         {rev.title}
                       </span>
                       <span className="font-label-metadata text-[10px] text-text-muted">
@@ -787,7 +821,7 @@ export const FrontPage: React.FC<FrontPageProps> = ({
 
               <button
                 onClick={() => onSelectReview(WIRECUTTER_REVIEWS[0])}
-                className="w-full mt-space-md py-space-xs bg-action-blue text-on-primary hover:bg-[#446277] font-label-badge text-label-badge uppercase tracking-wider transition-colors cursor-pointer"
+                className="w-full mt-space-md py-space-xs bg-action-blue text-on-primary hover:bg-[#446277] font-label-badge text-label-badge uppercase tracking-wider transition-colors cursor-pointer font-bold shadow-xs"
               >
                 Explore All Wirecutter Guides
               </button>

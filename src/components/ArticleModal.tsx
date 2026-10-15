@@ -8,6 +8,7 @@ interface ArticleModalProps {
   onToggleBookmark: (article: Article) => void;
   onSelectRelatedArticle: (articleId: string) => void;
   allArticles: Article[];
+  onStartAudioNarration: (article: Article) => void;
 }
 
 export const ArticleModal: React.FC<ArticleModalProps> = ({
@@ -17,30 +18,31 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   onToggleBookmark,
   onSelectRelatedArticle,
   allArticles,
+  onStartAudioNarration,
 }) => {
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'huge'>('normal');
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
   const [comments, setComments] = useState<ArticleComment[]>(article.comments || [
     {
       id: 'default-1',
-      author: 'Jane Doe',
-      location: 'New York, NY',
-      timestamp: '1 hour ago',
+      author: 'Eleanor Vance',
+      location: 'Bethesda, MD',
+      timestamp: '2 hours ago',
       text: 'Remarkable reporting as always. This clarifies several ambiguities that emerged in earlier cable commentary.',
-      upvotes: 28,
+      upvotes: 42,
     },
     {
       id: 'default-2',
-      author: 'Robert Sterling',
-      location: 'London, UK',
+      author: 'Marcus Aurelius',
+      location: 'Chicago, IL',
       timestamp: '3 hours ago',
-      text: 'The international ramifications of this policy pivot cannot be overstated. Watching this closely from Europe.',
-      upvotes: 19,
+      text: 'Personnel is policy. Regardless of political leaning, the turnover rate in second-term administrations historically signals where the true centers of power are consolidating.',
+      upvotes: 31,
     },
   ]);
   const [newCommentText, setNewCommentText] = useState('');
   const [authorName, setAuthorName] = useState('');
+  const [commentLocation, setCommentLocation] = useState('');
 
   // Handle escape key
   useEffect(() => {
@@ -50,37 +52,17 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.speechSynthesis.cancel();
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
-
-  // Audio Speech Synthesis
-  const handleToggleSpeech = () => {
-    if (!('speechSynthesis' in window)) return;
-
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    } else {
-      const fullSpeechText = `${article.title}. ${article.summary}. ${
-        article.fullContent?.join(' ') || ''
-      }`;
-      const utterance = new SpeechSynthesisUtterance(fullSpeechText);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-      setIsSpeaking(true);
-    }
-  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setShowShareToast(true);
     setTimeout(() => setShowShareToast(false), 2500);
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleAddComment = (e: React.FormEvent) => {
@@ -90,7 +72,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
     const newComment: ArticleComment = {
       id: `comment-${Date.now()}`,
       author: authorName.trim() || 'Reader',
-      location: 'United States',
+      location: commentLocation.trim() || 'United States',
       timestamp: 'Just now',
       text: newCommentText.trim(),
       upvotes: 1,
@@ -98,6 +80,8 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
     setComments([newComment, ...comments]);
     setNewCommentText('');
+    setAuthorName('');
+    setCommentLocation('');
   };
 
   const handleUpvote = (id: string) => {
@@ -106,10 +90,10 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
   const fontClass =
     fontSize === 'normal'
-      ? 'text-[17px] leading-[28px]'
+      ? 'text-[17px] leading-[29px]'
       : fontSize === 'large'
-      ? 'text-[20px] leading-[32px]'
-      : 'text-[23px] leading-[36px]';
+      ? 'text-[20px] leading-[33px]'
+      : 'text-[23px] leading-[37px]';
 
   const relatedArticles = allArticles
     .filter(a => a.id !== article.id)
@@ -123,34 +107,28 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
         <div className="sticky top-0 z-30 bg-canvas-white/95 backdrop-blur-md border-b border-rule-hairline px-4 md:px-8 py-3 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="flex items-center gap-1 text-sm font-semibold text-primary hover:text-action-blue transition-colors cursor-pointer group"
+            className="flex items-center gap-1.5 text-xs font-bold font-sans uppercase tracking-wider text-primary hover:text-action-blue transition-colors cursor-pointer group"
           >
             <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
-            <span>Back to Front Page</span>
+            <span>Front Page</span>
           </button>
 
-          <div className="flex items-center gap-2 md:gap-4">
-            {/* Audio narration */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Audio narration trigger */}
             <button
-              onClick={handleToggleSpeech}
-              title={isSpeaking ? 'Pause reading' : 'Listen to article'}
-              className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded border transition-colors cursor-pointer ${
-                isSpeaking
-                  ? 'bg-action-blue text-white border-action-blue'
-                  : 'bg-surface-container-low text-on-surface border-rule-hairline hover:bg-surface-container'
-              }`}
+              onClick={() => onStartAudioNarration(article)}
+              title="Listen to this article"
+              className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold font-sans rounded border border-action-blue text-action-blue bg-blue-50/50 hover:bg-blue-50 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">
-                {isSpeaking ? 'pause' : 'volume_up'}
-              </span>
-              <span className="hidden sm:inline">{isSpeaking ? 'Listening' : 'Listen'}</span>
+              <span className="material-symbols-outlined text-[16px]">volume_up</span>
+              <span className="hidden sm:inline">Listen ({article.readTime})</span>
             </button>
 
             {/* Font Size Selector */}
             <div className="flex items-center border border-rule-hairline rounded bg-surface-container-low px-1 py-0.5 text-xs font-serif">
               <button
                 onClick={() => setFontSize('normal')}
-                className={`px-1.5 py-0.5 text-xs rounded transition-colors ${
+                className={`px-1.5 py-0.5 text-xs rounded transition-colors cursor-pointer ${
                   fontSize === 'normal' ? 'bg-white font-bold shadow-xs' : 'text-text-muted hover:text-primary'
                 }`}
               >
@@ -158,7 +136,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               </button>
               <button
                 onClick={() => setFontSize('large')}
-                className={`px-1.5 py-0.5 text-sm rounded transition-colors ${
+                className={`px-1.5 py-0.5 text-sm rounded transition-colors cursor-pointer ${
                   fontSize === 'large' ? 'bg-white font-bold shadow-xs' : 'text-text-muted hover:text-primary'
                 }`}
               >
@@ -166,7 +144,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               </button>
               <button
                 onClick={() => setFontSize('huge')}
-                className={`px-1.5 py-0.5 text-base rounded transition-colors ${
+                className={`px-1.5 py-0.5 text-base rounded transition-colors cursor-pointer ${
                   fontSize === 'huge' ? 'bg-white font-bold shadow-xs' : 'text-text-muted hover:text-primary'
                 }`}
               >
@@ -187,6 +165,15 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               <span className="material-symbols-outlined text-[18px]">
                 {isBookmarked ? 'bookmark' : 'bookmark_border'}
               </span>
+            </button>
+
+            {/* Print */}
+            <button
+              onClick={handlePrint}
+              title="Print article"
+              className="hidden sm:block p-1.5 rounded border border-rule-hairline text-text-muted hover:text-primary bg-surface-container-low cursor-pointer transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
             </button>
 
             {/* Share */}
@@ -210,7 +197,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
         {/* Share Feedback Toast */}
         {showShareToast && (
-          <div className="bg-primary text-white text-xs px-4 py-2 text-center font-sans">
+          <div className="bg-primary text-white text-xs px-4 py-2 text-center font-sans tracking-wide">
             Link copied to clipboard!
           </div>
         )}
@@ -232,25 +219,25 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                 {article.kicker}
               </span>
             )}
-            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+            <span className="text-xs font-semibold text-text-muted uppercase tracking-wider font-sans">
               {article.category}
             </span>
           </div>
 
           {/* Headline */}
-          <h1 className="font-serif text-[32px] md:text-[42px] font-bold leading-[1.15] tracking-tight text-primary mb-4">
+          <h1 className="font-serif text-[32px] md:text-[44px] font-bold leading-[1.12] tracking-tight text-primary mb-4">
             {article.title}
           </h1>
 
           {/* Deck / Summary */}
-          <p className="font-serif text-[18px] md:text-[20px] text-on-surface-variant leading-snug mb-6 pb-6 border-b border-rule-hairline">
+          <p className="font-serif text-[18px] md:text-[21px] text-on-surface-variant leading-snug mb-6 pb-6 border-b border-rule-hairline">
             {article.summary}
           </p>
 
           {/* Byline and Metadata */}
           <div className="flex flex-wrap items-center justify-between text-xs text-text-muted font-sans pb-6 border-b border-rule-hairline gap-2 mb-6">
             <div>
-              <span className="font-bold text-on-surface">{article.author}</span>
+              <span className="font-bold text-on-surface text-sm">{article.author}</span>
               {article.authorBio && (
                 <span className="block text-[11px] text-text-muted mt-0.5">{article.authorBio}</span>
               )}
@@ -260,21 +247,21 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               <span>•</span>
               <span>{article.readTime}</span>
               <span>•</span>
-              <span className="flex items-center gap-1 font-semibold text-on-surface">
+              <a href="#comments" className="flex items-center gap-1 font-semibold text-on-surface hover:text-action-blue">
                 <span className="material-symbols-outlined text-[14px]">chat_bubble</span>
                 {comments.length} Comments
-              </span>
+              </a>
             </div>
           </div>
 
           {/* Optional Lead Image */}
           {article.imageUrl && (
             <div className="mb-8">
-              <div className="relative bg-surface-container overflow-hidden">
+              <div className="relative bg-surface-container overflow-hidden rounded-xs shadow-xs">
                 <img
                   src={article.imageUrl}
                   alt={article.imageCaption || article.title}
-                  className="w-full max-h-[480px] object-cover object-top"
+                  className="w-full max-h-[500px] object-cover object-top"
                 />
                 {article.imageCredit && (
                   <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[10px] px-1.5 py-0.5 font-sans">
@@ -283,7 +270,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                 )}
               </div>
               {article.imageCaption && (
-                <figcaption className="text-xs text-text-muted font-serif italic mt-2 px-1">
+                <figcaption className="text-xs text-text-muted font-serif italic mt-2.5 px-1 leading-relaxed">
                   {article.imageCaption}
                 </figcaption>
               )}
@@ -291,7 +278,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
           )}
 
           {/* Article Text */}
-          <div className={`font-serif text-on-surface space-y-5 ${fontClass}`}>
+          <div className={`font-serif text-on-surface space-y-6 ${fontClass}`}>
             {article.fullContent ? (
               article.fullContent.map((paragraph, index) => (
                 <p key={index} className={index === 0 ? 'drop-cap-p' : ''}>
@@ -314,8 +301,8 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
             {/* Pull Quote */}
             {article.pullQuote && (
-              <div className="my-8 py-6 border-y-2 border-rule-heavy">
-                <blockquote className="text-center font-serif italic text-[22px] md:text-[26px] text-primary px-4">
+              <div className="my-10 py-6 border-y-2 border-rule-heavy">
+                <blockquote className="text-center font-serif italic text-[22px] md:text-[26px] text-primary px-4 leading-snug">
                   “{article.pullQuote}”
                 </blockquote>
               </div>
@@ -323,13 +310,15 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
           </div>
 
           {/* Comments Section */}
-          <div className="mt-12 pt-8 border-t-2 border-rule-heavy">
+          <div id="comments" className="mt-14 pt-8 border-t-2 border-rule-heavy">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-serif text-2xl font-bold text-primary flex items-center gap-2">
                 <span>Comments</span>
                 <span className="text-sm font-sans font-normal text-text-muted">({comments.length})</span>
               </h3>
-              <span className="text-xs font-sans text-text-muted">Moderated in accordance with NYT Community Standards</span>
+              <span className="text-xs font-sans text-text-muted hidden sm:inline">
+                Moderated in accordance with NYT Community Standards
+              </span>
             </div>
 
             {/* Comment Form */}
@@ -343,9 +332,16 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                   onChange={e => setAuthorName(e.target.value)}
                   className="bg-white border border-rule-hairline px-3 py-1.5 text-xs rounded font-sans focus:outline-none focus:border-action-blue"
                 />
+                <input
+                  type="text"
+                  placeholder="Your City (e.g. Austin, TX)"
+                  value={commentLocation}
+                  onChange={e => setCommentLocation(e.target.value)}
+                  className="bg-white border border-rule-hairline px-3 py-1.5 text-xs rounded font-sans focus:outline-none focus:border-action-blue"
+                />
               </div>
               <textarea
-                placeholder="Share your thoughts on this story..."
+                placeholder="Share your perspective on this story..."
                 rows={3}
                 value={newCommentText}
                 onChange={e => setNewCommentText(e.target.value)}
@@ -355,7 +351,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-action-blue hover:bg-[#446277] text-white text-xs font-bold uppercase px-4 py-2 rounded transition-colors cursor-pointer"
+                  className="bg-action-blue hover:bg-[#446277] text-white text-xs font-bold uppercase tracking-wider px-5 py-2 rounded transition-colors cursor-pointer shadow-xs"
                 >
                   Submit Comment
                 </button>
@@ -363,9 +359,9 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             </form>
 
             {/* Comment List */}
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {comments.map(c => (
-                <div key={c.id} className="p-4 bg-white border border-rule-hairline rounded">
+                <div key={c.id} className="p-4 bg-white border border-rule-hairline rounded shadow-2xs">
                   <div className="flex items-center justify-between mb-1.5 font-sans text-xs">
                     <span className="font-bold text-primary">{c.author} <span className="font-normal text-text-muted">({c.location})</span></span>
                     <span className="text-text-muted">{c.timestamp}</span>
@@ -393,13 +389,13 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
                 <div
                   key={rel.id}
                   onClick={() => onSelectRelatedArticle(rel.id)}
-                  className="p-3 bg-surface-bright border border-rule-hairline hover:bg-surface-container cursor-pointer transition-colors flex flex-col justify-between"
+                  className="p-3 bg-surface-bright border border-rule-hairline hover:bg-surface-container cursor-pointer transition-colors flex flex-col justify-between group rounded-xs"
                 >
                   <div>
                     <span className="text-[10px] font-bold text-action-blue uppercase tracking-wider block mb-1">
                       {rel.category}
                     </span>
-                    <h5 className="font-serif font-bold text-sm text-primary line-clamp-2 hover:underline">
+                    <h5 className="font-serif font-bold text-sm text-primary line-clamp-2 group-hover:text-action-blue">
                       {rel.title}
                     </h5>
                   </div>
